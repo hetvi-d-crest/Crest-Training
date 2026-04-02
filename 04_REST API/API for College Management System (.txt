@@ -1,0 +1,62 @@
+API for College Management System (CMS)
+
+API Overview
+
+	Title: OpenAPI Specification for CMS
+	Description: API specification document of the CMS System
+	Contact: Hetvi Desai 
+	Version: 1.0
+	API Type: Public
+	Server Base URL : http://localhost:4433/api
+
+Courses
+	GET/api/courses
+	Content-Type: application/json
+	Request: None
+
+	POST/api/courses
+	Content-Type: application/json
+	Request:
+		Request Body Format:
+		{
+			"courseName"
+			"courseDuration"
+			"courseType"
+		}
+	Example:
+		{
+			"courseName" : "Computer Science
+			"courseDuration" : 4
+			"courseType" : "Engineering"
+		}
+
+	GET/api/courses/{courseId}
+	Content-Type: application/json
+	Request: None
+
+	PUT/api/courses/{courseId}
+	Content-Type: application/json
+	Request:
+		Request Body Format:
+		{
+			"courseName"
+			"courseDuration"
+			"courseType"
+		}
+	Example:
+		{
+			"courseName" : "Computer Science
+			"courseDuration" : 4
+			"courseType" : "Engineering"
+		}
+
+	DELETE/api/courses/{courseId}
+	Content-Type: application/json
+	Request: None
+	
+	GET/api/courses/{courseId}/students
+	Content-Type: application/json
+	Request: None
+ 
+	POST/api/courses/{courseId}/students
+	Content-Type: application/json

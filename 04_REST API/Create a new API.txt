@@ -1,0 +1,231 @@
+STEP 1: Create a new API
+	Title: OpenAPI Specification for CMS
+	Description: API specification document of the CMS System
+	Contact: Hetvi Desai 
+	Version: 1.0
+STEP 2: Identify the type of API
+	public
+
+Overview of RESTful APIs
+STEP 3: Identify the Server Base URL
+	http://(hostname):(port)/(directory)
+	http://localhost:4433/api
+
+Designing API Resources
+STEP 4: Identify the Resources
+	course
+	student
+
+STEP 5: Have the resources as plural
+	courses (/courses)
+	students (/students)
+
+STEP 6: Define the resource model
+	Course Model
+		Course Id
+		Course Name
+		Course Duration
+		Course Type
+	Student Model
+		Student Id
+		First Name
+		Last Name
+		Phone No.
+		Address
+
+STEP 7: Select the identifier for each resource
+	Course Model
+		Course Id (IDENTIFIER)
+		Course Name
+		Course Duration
+		Course Type
+	Student Model
+		Student Id (IDENTIFIER)
+		First Name
+		Last Name
+		Phone No.
+		Address
+
+Designing Associations between resources
+STEP 8: Identify the Association for Each Resource
+	Courses
+		/api/courses/{courseId}/students
+		/api/courses/{courseId}/course-subjects
+	Students
+		None
+
+STEP 9: Check for URL Complexity
+	Courses
+		/api/courses
+		/api/courses/{courseId}
+		/api/courses/{courseId}/students
+	Students
+		/api/students
+		/api/students/{studentId}
+
+Designing API Operations
+STEP 10: Identify operations for each resourse
+	Courses
+		/api/courses
+			GET
+			POST
+
+		/api/courses/{courseId}
+			GET
+			PUT
+			DELETE
+			
+		/api/courses/{courseId}/students	
+			GET 
+			POST
+	
+	Students
+		/api/students
+			GET
+			POST
+
+		/api/students/{studentId}
+			GET
+			PUT
+			DELETE
+
+Designing API Requests
+STEP 11: Identify the Parameters required for the Operation
+	Query Parameters
+		None
+
+	Path Parameters
+		None - collections
+		coursed - unique course Id of the course model (applicable for individual item)
+
+	Headers
+		None
+
+	Cookies
+		None
+
+STEP 12: Identify the Content Type of Request for the Operation
+	application/json 
+
+
+Designing API Responses:
+STEP 14: Identify the HTTP Status Codes for the Operation
+ 		/api/courses
+ 			GET
+				HTTP 200 OK
+ 			POST
+				HTTP 210 Created
+				HTTP 400 Bad request
+
+ 		/api/courses/{courseId}
+ 			GET
+				HTTP 200 OK
+				HTTP 404 NOT FOUND
+ 			PUT
+				HTTP 200 OK
+				HTTP 404 NOT FOUND
+ 			DELETE
+				HTTP 204 NO CONTENT
+ 
+ 		/api/courses/{courseId}/students
+ 			GET
+ 				HTTP 200 OK
+ 			POST
+ 				HTTP 210 Created
+ 				HTTP 400 Bad request
+
+STEP 15: Identify the Content Type of Response for the Operation
+application/json
+
+STEP 16: Identify the Response Body for the Operation
+	/api/courses
+ 		GET
+			(array)
+			courseId
+ 			courseName
+ 			courseDuration
+ 			courseType
+ 		POST
+			courseId
+			courseName
+			courseDuration
+			courseType
+
+ 	/api/courses/{courseId}
+ 		GET
+ 			courseId
+ 			courseName
+ 			courseDuration
+ 			courseType
+
+ 		PUT
+ 			courseId
+ 			courseName
+ 			courseDuration
+ 			courseType
+ 		DELETE
+			None
+ 
+ 	/api/courses/{courseId}/students
+ 		GET
+			(array)
+			studentID
+ 			firstName
+ 			lastName
+ 			phoneNumber
+ 			address
+
+ 		POST
+			studentId
+			firstName
+			lastName
+			phoneNumber
+			address
+ 
+STEP 17: Handle Errors for Operation
+{
+	"error":
+	{
+		"code": "INVALID_INPUT"
+		"message": "One or more input arguments are invalid"
+		"target": "Collegeinfo",
+		"details": [
+			{
+			"code":"INCORRECT_FORMAT",
+			"target":"zipcode"
+			"message":"Zipcode does not follow correct format",
+			}
+		]
+		"innererror": {
+			"message" : "Input string wasn't in a correct format",
+		}	
+	}
+}
+
+
+STEP 18: Identify the need for filtering and add if needed
+GET /api/courses
+Request:
+	courseType:
+		-Support for Filtering
+
+STEP 19: Identify the need for Pagination and add if needed
+GET /api/courses
+Request:
+	page:
+		- Support for pagination
+	size:
+		-Support for pagination
+
+STEP 20: Identify the need for Sorting and add if needed
+Get /api/courses
+Request:
+	sortBy:
+		- Support for sorting
+
+Designing API Versions
+STEP 21: Identify the API Versioning Scheme and set the API Version
+Versioning Scheme Used: URL Versioning
+Version 1.0
+
+

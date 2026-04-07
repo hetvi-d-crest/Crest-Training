@@ -1,0 +1,142 @@
+from groq import Groq  
+import streamlit as st
+
+st.set_page_config(page_title="Groq Streamlit Chat", page_icon="⚡")
+st.title("Chatbot")
+
+if "setup_complete" not in st.session_state:
+    st.session_state.setup_complete = False
+if "user_message_count" not in st.session_state:
+    st.session_state.user_message_count = 0
+if "feedback_shown" not in st.session_state:
+    st.session_state.feedback_shown = False
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "chat_complete" not in st.session_state:
+    st.session_state.chat_complete = False
+
+
+def complete_setup():
+    st.session_state.setup_complete = True
+
+def show_feedbackp():
+    st.session_state.feedback_shown = True
+
+if not st.session_state.setup_complete:
+
+    st.subheader('Personal information', divider='rainbow')
+
+    if "name" not in st.session_state:
+        st.session_state["name"] = ""
+    if "experience" not in st.session_state:
+        st.session_state["experience"] = ""
+    if "skills" not in st.session_state:
+        st.session_state["skills"] = ""
+
+    st.session_state["name"] = st.text_input(label = "Name", max_chars = 40, value = st.session_state["name"], placeholder = "Enter your name")
+
+    st.session_state["experience"] = st.text_area(label = "Experience", value = st.session_state["experience"], height = None, max_chars = 200, placeholder = "Describe your experience")
+
+    st.session_state["skills"] = st.text_area(label = "Skills", value = st.session_state["skills"], height = None, max_chars = 200, placeholder = "List your skills")
+
+    st.write(f"**Your Name**: {st.session_state["name"]}")
+    st.write(f"**Your Experience**: {st.session_state["experience"]}")
+    st.write(f"**Your Skills**: {st.session_state["skills"]}")
+
+    st.subheader('Company and Position', divider= 'rainbow')
+
+    if "level" not in st.session_state:
+        st.session_state["level"] = "Junior"
+    if "position" not in st.session_state:
+        st.session_state["position"] = "Data Scientist"
+    if "company" not in st.session_state:
+        st.session_state["company"] = "Amazon"
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.session_state["level"] = st.radio(
+            "Choose level",
+            key = "visibility",
+            options = ["Junior", "Mid Level", "Senior"]
+        )
+
+    with col2:
+        st.session_state["position"] = st.selectbox(
+            "Choose a position",
+            ("Data Scientist", "ML Engineer", "Data Engineer", "BI Analyst", "Financial Analyst")
+        )
+
+    st.session_state["company"] = st.selectbox(
+        "Choose a company",
+        ("Amazon", "Meta", "Netflix", "Google", "Microsoft", "Adobe")
+    )
+
+    st.write(f"**Your information**: {st.session_state["level"]} {st.session_state["position"]} at {st.session_state["company"]}")
+
+    if st.button("Start Interview", on_click=complete_setup):
+        st.write("Setup complete. Starting interview...")
+
+if st.session_state.setup_complete and not st.session_state.feedback_shown and not st.session_state.chat_complete:
+
+    st.info(
+        """
+        Start by introducing yourself
+        """
+    )
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
+    if "groq_model" not in st.session_state:
+        st.session_state["groq_model"] = "llama-3.3-70b-versatile"
+
+    if not st.session_state.messages:
+        st.session_state.messages = [{"role": "system", "content": (f"You are an HR executive that interviews an interviewee called {st.session_state['name']} "
+                                                                    f"with experience {st.session_state['experience']} and skills {st.session_state['experience']}"
+                                                                    f"You should interview them for the position {st.session_state['level']} {st.session_state['position']}"
+                                                                    f"at the company {st.session_state['company']}.")}]
+
+    # Looping through the 'messages' list to display each message except system messages
+    for message in st.session_state.messages:
+        if message["role"] != "system":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+    
+    if st.session_state.user_message_count < 5:
+    # Input field for the user to send a new message
+        if prompt := st.chat_input("Your answer.", max_chars= 1000):
+            # Appending the user's input to the 'messages' list in session state
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            
+            # Display the user's message in a chat bubble
+            with st.chat_message("user"):
+                st.markdown(prompt)
+        
+            if st.session_state.user_message_count < 4:
+                with st.chat_message("assistant"):
+                    # 1. Start the raw stream from Groq
+                    full_stream = client.chat.completions.create(
+                        model=st.session_state["groq_model"],
+                        messages=[
+                            {"role": m["role"], "content": m["content"]}
+                            for m in st.session_state.messages
+                        ],
+                        stream=True,
+                    )
+
+                    # 2. Define a generator to extract ONLY the text content
+                    def generate_groq_content(stream):
+                        for chunk in stream:
+                            # Groq chunks store text in choices[0].delta.content
+                            content = chunk.choices[0].delta.content
+                            if content:
+                                yield content
+
+                    # 3. Use st.write_stream with our clean generator
+                    response = st.write_stream(generate_groq_content(full_stream))
+                    
+                # Append the clean string to history
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            st.session_state.user_message_count += 1
+    
+    if st.session_state.user_message_count >= 5:
+        st.session_state.chat_complete = True
